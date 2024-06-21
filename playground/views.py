@@ -1,19 +1,20 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, connection
 from django.db.models import Q, F, Value, Func, Min, ExpressionWrapper, DecimalField
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 from django.db.models.functions import Concat
 from django.contrib.contenttypes.models import ContentType
 from tags.models import TaggedItem
 
-from store.models import Product, OrderItem, Order, Customer
+from store.models import Product, OrderItem, Order, Customer, Collection
+
 
 # Create your views here.
 
-
+#@transaction.atomic() # Wraps the whole function in transaction
 def say_hello(request):
-
     # Retrival
     product = Product.objects.get(pk=1)  # Return Object Instance
     product = Product.objects.filter(pk=1).first()
@@ -143,7 +144,7 @@ def say_hello(request):
     query_set = Customer.objects.annotate(orders_count=Count('order'))
 
     ################################# Expression wrapper ##############################
-    
+
     # Set the output filed (decimal * Float)
     discounted_price = ExpressionWrapper(F('unit_price') * 0.8, output_field=DecimalField())
 
@@ -153,8 +154,79 @@ def say_hello(request):
 
     content_type = ContentType.objects.get_for_model(Product)
     query_set = TaggedItem.objects.select_related('tag').filter(
-        content_type= content_type,
-        object_id__in = [1,4]
+        content_type=content_type,
+        object_id__in=[1, 4]
     )
+
+    ################################# Custom Managers ##############################
+
+    query_set = TaggedItem.objects.get_tags_for(Product, 1)  # custom manager function
+    query_set = TaggedItem.objects.all()
+
+    ################################# Queryset Cache ##############################
+
+    print(list(query_set))  # Reading all Records First
+    print(list(query_set[0:10]))  # Read Data from cache of above queryset
+
+    ################################# Create Object ##############################
+
+    collection = Collection()
+    collection.title = 'Video Games'
+    collection.featured_product = Product(pk=1)  # featured_product_id =1
+    # collection.save()
+    # print(collection.id)
+
+    #OR
+
+    # collection = Collection.objects.create(
+    #     title='Ott Media',
+    #     featured_product_id=1
+    # )
+    # print(collection.id)
+
+    ################################# Update Object ##############################
+
+    # collection = Collection(pk=17) # Update Only given fields and set other fields = ''
+
+    # collection = Collection.objects.get(pk=17) # Get Loads instance data in memory First
+    # collection.title = 'Audio Books'
+    # collection.featured_product = None
+    # collection.save()
+
+    #Or
+    Collection.objects.filter(pk=17).update(featured_product_id=1)
+
+    ################################# Delete Object ##############################
+    collection = Collection(pk=9)
+    collection.delete()
+
+    Collection.objects.filter(id__gt=10).delete()
+
+    ################################# Transactions ##############################
+
+    with transaction.atomic():
+
+        order = Order()
+        order.customer_id = 1
+        order.save()
+
+        item = OrderItem()
+        item.order = order
+        item.product_id = 2
+        item.unit_price = 10
+        item.quantity = 1
+        item.save()
+
+    ################################# RAW SQL Queries ##############################
+
+    # raw_query_set = Product.objects.raw("SELECT * FROM store_product")
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM store_product")
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+        # call_sp = cursor.callproc('get_customers', [1,2,'a']) # Call store procedure with arguments
 
     return render(request, 'hello.html', {"name": 'Hardk', 'products': list(query_set), "result": result})
