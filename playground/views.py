@@ -4,6 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F, Value, Func, Min, ExpressionWrapper, DecimalField
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 from django.db.models.functions import Concat
+from django.contrib.contenttypes.models import ContentType
+from tags.models import TaggedItem
 
 from store.models import Product, OrderItem, Order, Customer
 
@@ -47,7 +49,7 @@ def say_hello(request):
 
     ###################################################################
 
-    # Referancing Fields (F Object)
+    # Referencing Fields (F Object)
     # inventory = price
     query_set = Product.objects.filter(inventory=F('unit_price'))
     query_set = Product.objects.filter(inventory=F('collection__id'))
@@ -146,5 +148,13 @@ def say_hello(request):
     discounted_price = ExpressionWrapper(F('unit_price') * 0.8, output_field=DecimalField())
 
     query_set = Product.objects.annotate(discount_price=discounted_price)
+
+    ################################# Generic Relationships ##############################
+
+    content_type = ContentType.objects.get_for_model(Product)
+    query_set = TaggedItem.objects.select_related('tag').filter(
+        content_type= content_type,
+        object_id__in = [1,4]
+    )
 
     return render(request, 'hello.html', {"name": 'Hardk', 'products': list(query_set), "result": result})
