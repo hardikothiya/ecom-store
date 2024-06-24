@@ -7,12 +7,14 @@ from .models import Product, Collection
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ['id', 'title', 'url']
+        fields = ['id', 'title', 'products_count']
+        read_only_fields = ('products_count',)
 
-    url = serializers.HyperlinkedIdentityField('collection-detail')  # Add Hyperlink
 
-    def calculate_tax(self, product: Product):
-        return product.unit_price * Decimal(1.1)
+    # url = serializers.HyperlinkedIdentityField('collection-detail')  # Add Hyperlink
+    products_count = serializers.IntegerField(read_only=True)
+
+
 
 
 class ProductSerializer(serializers.ModelSerializer):
