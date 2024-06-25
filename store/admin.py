@@ -74,11 +74,12 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'membership', 'orders_count']
+    list_display = ['first_name', 'last_name', 'membership', 'orders_count'] #GET first_name and last_name from Model Methods
     list_editable = ['membership']
     list_per_page = 10
-    ordering = ['first_name', 'last_name']
-    search_fields = ['first_name__istartswith', 'last_name__istartswith']
+    # ordering = ['user__first_name', 'user__last_name'] # Using Decorator in Customer Model
+    search_fields = ['user__first_name__istartswith', 'user__last_name__istartswith']
+    autocomplete_fields = ['user']
 
     def orders_count(self, customer):
         url = reverse("admin:store_order_changelist") + "?" + urlencode({
