@@ -3,5 +3,6 @@ from . import views
 
 urlpatterns = [
     path('hello/', views.say_hello),
-    path('mails/', views.mails)
+    path('mails/', views.mails),
+    path('celery-tasks/', views.send_marketing_mails)
 ]

@@ -8,7 +8,7 @@ from django.db.models.functions import Concat
 from django.contrib.contenttypes.models import ContentType
 from django.core.mail import send_mail, mail_admins, mail_managers, send_mass_mail, BadHeaderError, EmailMessage
 from tags.models import TaggedItem
-
+from .tasks import notify_customer
 from store.models import Product, OrderItem, Order, Customer, Collection
 
 
@@ -247,3 +247,8 @@ def mails(request):
     except BadHeaderError:
         pass
     return HttpResponse('ok')
+
+
+def send_marketing_mails(request):
+    notify_customer.delay("Hello")
+    return HttpResponse("OK")
