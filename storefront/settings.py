@@ -77,6 +77,20 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:9000",
 ]
 
+# SMTP Server config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 2525
+DEFAULT_FROM_EMAIL = 'myemail@my.com'
+
+# Use: mail_admins
+ADMINS = [
+    ("Name", "Name@gmail.com"),
+    ("Admin2", "Second@email.com")
+]
+
 AUTH_USER_MODEL = 'core.User'
 
 ROOT_URLCONF = 'storefront.urls'

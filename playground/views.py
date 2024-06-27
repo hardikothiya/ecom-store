@@ -6,6 +6,7 @@ from django.db.models import Q, F, Value, Func, Min, ExpressionWrapper, DecimalF
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 from django.db.models.functions import Concat
 from django.contrib.contenttypes.models import ContentType
+from django.core.mail import send_mail, mail_admins, mail_managers, send_mass_mail, BadHeaderError, EmailMessage
 from tags.models import TaggedItem
 
 from store.models import Product, OrderItem, Order, Customer, Collection
@@ -230,3 +231,19 @@ def say_hello(request):
         # call_sp = cursor.callproc('get_customers', [1,2,'a']) # Call store procedure with arguments
 
     return render(request, 'hello.html', {"name": 'Hardk', 'products': list(query_set), "result": result})
+
+
+def mails(request):
+    # BadHeaderError : security measure for header modifications
+    try:
+        # send_mail('Subject', 'Body', 'mymail@mail.com', ['receiver1@gmail.com'])
+        mail_admins('Subject', 'message', html_message='message')  #
+
+        # EmailMessage
+        message = EmailMessage('Subject', 'Body', 'mymail@mail.com', ['receiver1@gmail.com'])
+        message.attach_file('playground/static/images/download.png')
+        message.send()
+
+    except BadHeaderError:
+        pass
+    return HttpResponse('ok')
