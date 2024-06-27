@@ -18,7 +18,6 @@ from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -29,7 +28,6 @@ SECRET_KEY = 'django-insecure-34a22r_6&pl!!ba@$dy9h$n-vnis@z*j@tqsj$pj@nta6h5jtc
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -44,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     "corsheaders",
+    'silk',
     'playground',
     'debug_toolbar',
     'store',
@@ -54,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+
     'corsheaders.middleware.CorsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -64,6 +64,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
 
 # For Django-Debug-Toolbar
 INTERNAL_IPS = [
@@ -114,7 +117,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'storefront.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -136,7 +138,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -155,7 +156,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -166,7 +166,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -195,26 +194,25 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_TYPES': ('JWT',),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5)
 }
 
 DJOSER = {
-    "SERIALIZERS":{
-        "user_create" : 'core.serializers.UserCreateSerializer',
-        "current_user" :'core.serializers.UserSerializer',
+    "SERIALIZERS": {
+        "user_create": 'core.serializers.UserCreateSerializer',
+        "current_user": 'core.serializers.UserSerializer',
     }
 }
 
-
 CELERY_BROKER_URL = 'redis://localhost:6379/1'
 CELERY_BEAT_SCHEDULE = {
-    "notify_customers" : {
-        'task' : 'playground.tasks.notify_customer',
+    "notify_customers": {
+        'task': 'playground.tasks.notify_customer',
         # 'schedule' : 5, # Seconds
-        'schedule' :crontab(day_of_week=1, hour=7, minute=30),
-        'args' : ['Hello World'],
-        'kwargs' : {}
-}
+        'schedule': crontab(day_of_week=1, hour=7, minute=30),
+        'args': ['Hello World'],
+        'kwargs': {}
+    }
 }
