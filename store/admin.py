@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.utils.html import format_html, urlencode
 
 from . import models
+from .models import ProductImage
 
 
 #admin.site.register(models.Product, ProductAdmin)
@@ -26,6 +27,15 @@ class InventoryFilter(admin.SimpleListFilter):
         elif self.value() == ">10":
             return queryset.filter(inventory__gte=10)
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    readonly_fields = ['thumbnail']
+
+    # Render Image thumbnail for admin
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html(f'<image src={instance.image.url} class = "thumbnail" >  ')
+        return ''
 
 
 @admin.register(models.Product)
@@ -48,6 +58,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_select_related = ['collection']
     list_filter = ['collection', 'last_update', InventoryFilter]
     search_fields = ['title']
+    inlines = [ProductImageInline]
     def collection_title(self, product):
         return product.collection.title
 
@@ -70,6 +81,11 @@ class ProductAdmin(admin.ModelAdmin):
             messages.ERROR
         )
 
+    # To appy css to thumbnail
+    class Media:
+        css = {
+            'all' : ['store/style.css']
+        }
 
 
 @admin.register(models.Customer)
@@ -127,3 +143,5 @@ class CollectionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             products_count=Count('products')
         )
+
+

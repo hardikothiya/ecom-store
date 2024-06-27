@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.contrib import admin
 from uuid import uuid4
+from .validators import validate_file_size
 
 
 # Create your models here.
@@ -42,6 +43,12 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['title']
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='store/images',  # Path : MEDIA/store/images
+                              validators=[validate_file_size])  # custom file size validator
 
 
 class Customer(models.Model):
@@ -109,7 +116,8 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order,
-                              on_delete=models.PROTECT, related_name='items')  # orderitem_set reverse relation by default in Order table
+                              on_delete=models.PROTECT,
+                              related_name='items')  # orderitem_set reverse relation by default in Order table
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='orderitems')
     quantity = models.SmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
