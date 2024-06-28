@@ -14,6 +14,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from celery.schedules import crontab
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,10 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-34a22r_6&pl!!ba@$dy9h$n-vnis@z*j@tqsj$pj@nta6h5jtc'
 
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "*"
+]
 
 # Application definition
 
@@ -80,11 +86,13 @@ INTERNAL_IPS = [
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:9000",
     "http://localhost:9000",
+    "http://0.0.0.0",
+    "http://0.0.0.0:8000",
 ]
 
 # SMTP Server config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
+EMAIL_HOST = os.getenv("SMTP_HOST")
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 2525
@@ -131,18 +139,18 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storefront',
-        'HOST': '127.0.0.1',
-        'USER': 'hardik',
-        'PASSWORD': 'Hardik@991322',
-        'PORT': '3306'
+        'NAME': os.getenv('SQL_DB_NAME'),
+        'HOST': os.getenv('SQL_HOST'),
+        'USER': os.getenv('SQL_USERNAME'),
+        'PASSWORD': os.getenv('SQL_PASSWORD'),
+        'PORT': os.getenv('SQL_POST')
     }
 }
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/2",
+        "LOCATION": os.getenv("REDIS_URL") + "/2",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -218,7 +226,7 @@ DJOSER = {
     }
 }
 
-CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BROKER_URL = os.getenv("REDIS_URL") + '/1'
 CELERY_BEAT_SCHEDULE = {
     "notify_customers": {
         'task': 'playground.tasks.notify_customer',
