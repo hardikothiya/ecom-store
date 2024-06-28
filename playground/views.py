@@ -16,6 +16,9 @@ from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 
+import logging
+logger = logging.getLogger(__name__) # playground.views
+
 
 # Create your views here.
 
@@ -275,9 +278,14 @@ def cache_test2(request):
 
 class HelloCache(APIView):
 
-    @method_decorator(cache_page(5 * 20) ) # For Function Based Views Only
+    # @method_decorator(cache_page(5 * 20) ) # For Function Based Views Only
     def get(self, request):
-        result = requests.get('https://httpbin.org/delay/2')
-        httpbin_result = result.json()
+        try:
+            logger.info("Calling HTTP bin")
+            result = requests.get('https://httpbin.org/delay/2')
+            logger.info("Received Message")
+            httpbin_result = result.json()
+        except Exception as e:
+            logger.critical("HTTP bin offline")
         return HttpResponse(httpbin_result)
 
