@@ -17,6 +17,7 @@ django-cors-headers = "*"
 redis = "*"
 celery = "*"
 flower = "*"
+django-redis = "*"
 
 [dev-packages]
 pytest = "*"

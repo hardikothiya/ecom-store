@@ -10,6 +10,11 @@ from django.core.mail import send_mail, mail_admins, mail_managers, send_mass_ma
 from tags.models import TaggedItem
 from .tasks import notify_customer
 from store.models import Product, OrderItem, Order, Customer, Collection
+import requests
+from rest_framework.views import APIView
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 
 # Create your views here.
@@ -252,3 +257,27 @@ def mails(request):
 def send_marketing_mails(request):
     notify_customer.delay("Hello")
     return HttpResponse("OK")
+
+
+def cache_test(request):
+    if cache.get('httpbin_result') is None:
+        result = requests.get('https://httpbin.org/delay/2')
+        httpbin_result = result.json()
+        cache.set('httpbin_result', httpbin_result, 10 * 60)
+    return HttpResponse(cache.get('httpbin_result').__str__())
+
+
+@cache_page(5 * 20) # For Function Based Views Only
+def cache_test2(request):
+    result = requests.get('https://httpbin.org/delay/2')
+    httpbin_result = result.json()
+    return HttpResponse(httpbin_result)
+
+class HelloCache(APIView):
+
+    @method_decorator(cache_page(5 * 20) ) # For Function Based Views Only
+    def get(self, request):
+        result = requests.get('https://httpbin.org/delay/2')
+        httpbin_result = result.json()
+        return HttpResponse(httpbin_result)
+
